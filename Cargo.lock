@@ -9,6 +9,7 @@ dependencies = [
  "aws_lambda_events",
  "lambda_runtime",
  "log",
+ "serde",
  "simple_logger",
  "tokio",
 ]

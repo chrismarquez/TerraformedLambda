@@ -2,8 +2,14 @@
 use aws_lambda_events::encodings::Body;
 use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
 use aws_lambda_events::http::HeaderMap;
+use aws_lambda_events::serde_json;
 use lambda_runtime::{Error, LambdaEvent, service_fn};
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize)]
+struct Response {
+    message: String
+}
 
 async fn handle_ping(event: LambdaEvent<ApiGatewayProxyRequest>) -> Result<ApiGatewayProxyResponse, Error> {
     let method = event.payload.http_method.as_str();
@@ -12,11 +18,14 @@ async fn handle_ping(event: LambdaEvent<ApiGatewayProxyRequest>) -> Result<ApiGa
     log::debug!("Running in debug mode");
     log::info!("Received {} request on {}", method, path);
 
+    let message = Response { message: format!("Hello from '{}'", path) };
+    let payload = serde_json::to_string(&message)?;
+
     let resp = ApiGatewayProxyResponse {
         status_code: 200,
         headers: HeaderMap::new(),
         multi_value_headers: HeaderMap::new(),
-        body: Some(Body::Text(format!("Hello from '{}'", path))),
+        body: Some(Body::Text(payload)),
         is_base64_encoded: Some(false),
     };
 
